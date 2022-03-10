@@ -1,0 +1,16 @@
+name: demix-env
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - pip
+  - pip:
+    - tkinter
+    - ipywidgets
+    - qgrid
+    - pandas
+    - matplotlib
+    - seaborn
+    - scipy
+    
