@@ -1,8 +1,10 @@
 #!/bin/bash
-jupyter lab build
 
-jupyter labextension install @jupyter-widgets/jupyterlab-manager qgrid
+jupyter nbextension enable --py --sys-prefix qgrid
+jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
-jupyter contrib nbextension install --user
-jupyter nbextension enable --py qgrid
-jupyter nbextension enable --py widgetsnbextension
+# Install JupyterLab extension
+jupyter labextension install @jupyterlab/toc
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+jupyter labextension install qgrid2
+
