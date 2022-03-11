@@ -2,14 +2,16 @@ name: demix-env
 channels:
   - conda-forge
 dependencies:
+  - jupyterlab
   - python
   - numpy
+  - qgrid
+  - matplotlib>=2.1.1
   - pip
   - pip:
     - ipywidgets
-    - qgrid
     - pandas
-    - matplotlib
     - seaborn
+    - qgrid
     - scipy
     - jupyter_contrib_nbextensions
