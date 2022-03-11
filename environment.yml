@@ -1,6 +1,7 @@
 name: demix-env
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - jupyterlab
   - python
