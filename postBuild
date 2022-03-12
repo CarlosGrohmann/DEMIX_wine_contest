@@ -4,7 +4,7 @@ jupyter nbextension enable --py --sys-prefix qgrid
 jupyter nbextension enable --py --sys-prefix widgetsnbextension
 
 # Install JupyterLab extension
-jupyter labextension install @jupyterlab/toc
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-jupyter labextension install qgrid2
+# jupyter labextension install @jupyterlab/toc
+# jupyter labextension install @jupyter-widgets/jupyterlab-manager
+# jupyter labextension install qgrid2
 
