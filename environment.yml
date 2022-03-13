@@ -8,8 +8,10 @@ dependencies:
   - numpy
   - qgrid
   - matplotlib
+  - nodejs
   - pip
   - pip:
+    - npm
     - ipywidgets
     - pandas
     - seaborn
