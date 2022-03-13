@@ -9,6 +9,7 @@ dependencies:
   - qgrid
   - matplotlib
   - nodejs
+  - jupyter_contrib_nbextensions 
   - pip
   - pip:
     - npm
