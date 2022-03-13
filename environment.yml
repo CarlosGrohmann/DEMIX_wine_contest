@@ -9,7 +9,6 @@ dependencies:
   - qgrid
   - matplotlib
   - nodejs
-  - jupyter_contrib_nbextensions 
   - pip
   - pip:
     - npm
@@ -18,3 +17,4 @@ dependencies:
     - seaborn
     - qgrid
     - scipy
+    - jupyter_contrib_nbextensions 
