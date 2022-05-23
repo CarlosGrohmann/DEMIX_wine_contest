@@ -1,0 +1,7 @@
+AREA,DEMIX_TILE,DEM,REF_DEM,GRID_FULL,NUM_PITS,NUM_PEAKS,DIFF_PITS,DIFF_PEAKS
+italy,N46PE010J,COP,md_italy_1sec_point,100.00,8,15,8,-6
+italy,N46PE010J,SRTM_egm2008,md_italy_1sec_point,100.00,3,12,3,-9
+italy,N46PE010J,ALOS_egm2008,md_italy_1sec_area,100.00,2,17,2,-3
+italy,N46PE010J,NASA_egm2008,md_italy_1sec_point,100.00,1,9,1,-12
+italy,N46PE010J,ASTER_egm2008,md_italy_1sec_point,100.00,2,15,2,-6
+italy,N46PE010J,FABDEM,md_italy_1sec_point,100.00,2,16,2,-5
