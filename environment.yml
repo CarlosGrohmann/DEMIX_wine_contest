@@ -7,17 +7,17 @@ dependencies:
   - qgrid
   - pandas-datareader>=0.5.0
   - matplotlib>=2.1.1
+  - ipywidgets
+  - widgetsnbextension
+  - numpy
+  - nbinteract
+  - npm
+  - nodejs
+  - pandas
+  - seaborn
+  - scipy
+  - jupyter_contrib_nbextensions
   - pip
-  - pip:
-    - ipywidgets
-    - qgrid
-    - numpy
-    - nbinteract
-    - npm
-    - nodejs
-    - pandas
-    - seaborn
-    - scipy
-    - ipywidgets
-    - jupyter_contrib_nbextensions 
-    - widgetsnbextension
+  
+
+    
