@@ -4,17 +4,19 @@ channels:
   - defaults
 dependencies:
   - jupyterlab
-  - python
-  - numpy
   - qgrid
-  - matplotlib
-  - nodejs
+  - pandas-datareader>=0.5.0
+  - matplotlib>=2.1.1
   - pip
   - pip:
-    - npm
     - ipywidgets
+    - qgrid
+    - numpy
+    - nbinteract
+    - npm
+    - nodejs
     - pandas
     - seaborn
-    - qgrid
     - scipy
+    - ipywidgets
     - jupyter_contrib_nbextensions 
