@@ -1,6 +1,8 @@
 jupyter labextension install @jupyter-widgets/jupyterlab-manager qgrid
 jupyter nbextension enable --py widgetsnbextension
 
+
+
 #!/bin/bash
 
 # Install JupyterLab extension
