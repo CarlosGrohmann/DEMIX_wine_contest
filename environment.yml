@@ -20,3 +20,4 @@ dependencies:
     - scipy
     - ipywidgets
     - jupyter_contrib_nbextensions 
+    - widgetsnbextension
