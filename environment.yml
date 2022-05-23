@@ -10,14 +10,15 @@ dependencies:
   - ipywidgets
   - widgetsnbextension
   - numpy
-  - nbinteract
-  - npm
   - nodejs
   - pandas
   - seaborn
   - scipy
   - jupyter_contrib_nbextensions
   - pip
+  - pip:
+    - nbinteract
+    - npm
   
 
     
