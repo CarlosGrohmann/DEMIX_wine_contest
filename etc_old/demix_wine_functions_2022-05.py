@@ -32,14 +32,13 @@ def make_criteria_df(csv_list,datadir):
         
         # get lists from df
         dems_list = list(df_csv['DEM'].unique())
-        #tile_list = list(df_csv['DEMIX_TILE'].unique())
-        #ref_list = list(df_csv['REF_TYPE'].unique())
-        #ref_slp_list = list(df_csv['REF_SLOPE'].unique())
+        tile_list = list(df_csv['DEMIX_TILE'].unique())
+        ref_list = list(df_csv['REF_TYPE'].unique())
         
         # dfs for row-based format 
-        df_left = pd.DataFrame(columns=(['AREA','DEMIX_TILE','REF_TYPE','REF_SLOPE']))
+        df_left = pd.DataFrame(columns=(['AREA', 'DEMIX_TILE', 'REF_TYPE']))
         df_right = pd.DataFrame(columns=(['METRIC']+dems_list))     
-        group_dem = df_csv.groupby(['DEMIX_TILE','REF_TYPE','REF_SLOPE'])
+        group_dem = df_csv.groupby(['DEMIX_TILE','REF_TYPE'])
         
         # convert from PG format to row-based
         for g_idx, group in group_dem:
@@ -48,11 +47,10 @@ def make_criteria_df(csv_list,datadir):
             area = group.T.iloc[0,1]
             tile = group.T.iloc[1,1]
             surf = group.T.iloc[4,1]
-            slop = group.T.iloc[5,1]
-            dictemp = {'AREA':area, 'DEMIX_TILE':tile, 'REF_TYPE':surf,'REF_SLOPE':slop}
+            dictemp = {'AREA':area, 'DEMIX_TILE':tile, 'REF_TYPE':surf}
             # ------------------------------
             # create metrics df (left one)
-            metrics_T = group.T.drop(labels=group.T.index[[0,1,2,3,4,5]], axis=0).reset_index()
+            metrics_T = group.T.drop(labels=group.T.index[[0,1,2,3,4]], axis=0).reset_index()
             # ISSUE: sometimes FABDEM has no values...
             met_cols = ['METRIC']+dems_list
             if len(metrics_T.columns) == len(met_cols):
