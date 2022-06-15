@@ -39,7 +39,7 @@ def make_criteria_df(csv_list):
     ''' open csv files with metrics (from MicroDEM), 
     already in a transposed format (one criterion per row)'''
     df_merged = pd.DataFrame()
-    for f in open_csv_files.files:
+    for f in csv_list:
         df = pd.read_csv(f, sep=',',engine='python',comment='#',quotechar='"')
         df_merged = pd.concat([df_merged,df],sort=False)
     return df_merged
