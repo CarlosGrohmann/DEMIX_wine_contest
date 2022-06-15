@@ -159,7 +159,7 @@ def friedman_stats(df,dem_list,tables_dir,cl):
     print(f'N = {n} (number of criteria)')
     print(f'k = {k} (number of DEMs)')
     print(f'CF = {cf}')
-    print(f'sum of ranks (vector) = {sum_ranks_dems.tolist()}')  # excel Sheet1!J10:O10
+    print(f'sum of ranks (vector) = {ranks_vect.tolist()}')  # excel Sheet1!J10:O10
     print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
     print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
     print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
