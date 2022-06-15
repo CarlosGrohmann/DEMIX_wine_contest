@@ -3,19 +3,55 @@
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # Functions for the DEMIX Wine Contest Jupyter notebook
-# Carlos H. Grohmann - 2022
+# Carlos H. Grohmann
+# version 2022-06-15
 
 import sys,os
 import pandas as pd
 import numpy as np
 from scipy.special import ndtri
+from ipywidgets import Button
+from tkinter import Tk, filedialog
+from IPython.display import clear_output, display
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# from: https://edusecrets.com/lesson-02-creating-a-file-select-button-in-jupyter-notebook/
+def select_files(b):
+    clear_output()
+    root = Tk()
+    root.withdraw() # Hide the main window.
+    root.call('wm', 'attributes', '.', '-topmost', True) # Raise the root to the top of all windows.
+    b.files = filedialog.askopenfilename(multiple=True) # List of selected files will be set button's file attribute.
+    # b.names = [f.split('/')[-1].split('.')[0] for f in b.files] # only names of files
+    names = [f.split('/')[-1] for f in b.files]
+    print(f'Selected file(s):{str(names)[1:-1]}') # Print the list of files selected.
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+def make_criteria_df(csv_list):
+    ''' open csv files with metrics (from MicroDEM), 
+    already in a transposed format (one criterion per row)'''
+    df_merged = pd.DataFrame()
+    for f in open_csv_files.files:
+        df = pd.read_csv(f, sep=',',engine='python',comment='#',quotechar='"')
+        df_merged = pd.concat([df_merged,df],sort=False)
+    return df_merged
+
+
 
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # make dataframes from csv files and append all to a single one
-def make_criteria_df(csv_list,datadir):
+def make_criteria_df_not_transposed(csv_list,datadir):
     ''' open csv files with metrics (from PG), 
     get them in a format with one metric per row,
     join all into a single df at the end'''
@@ -111,22 +147,22 @@ def friedman_stats(df,dem_list,tables_dir,cl):
     k = len(dem_cols) # number of DEMs being compared
     cf = 1/4*n*k*((k+1)**2)
     #
-    sum_ranks_dems = df[dem_cols_rank].sum()
-    sum_squared_ranks_dems = df[dem_cols_rank_sq].sum().sum()
-    sum_ranks = sum_ranks_dems.sum()
-    sum_ranks_sq_dems = sum_ranks_dems.pow(2)
-    sum_ranks_sq = sum_ranks_sq_dems.sum()
+    ranks_vect = df[dem_cols_rank].sum() # excel Sheet1!J10:O10
+    sum_ranks_vect = ranks_vect.sum() # excel SOMA(Sheet1!J10:O10)
+    ranks_sq_vect = ranks_vect.pow(2) # excel Sheet1!J11:O11
+    sum_ranks_sq_vect = ranks_sq_vect.sum() # excel SOMA(Sheet1!J11:O11)
+    sum_squared_ranks = df[dem_cols_rank_sq].sum().sum() # excel SOMA(Sheet1!Q14:V322)
+
+    chi_r =( (n * (k-1)) / (sum_squared_ranks - cf) * (sum_ranks_sq_vect/n - cf) )
+    # =+E5*(E6-1)/(SOMA(Sheet1!Q14:V322)-E7)*(SOMA(Sheet1!J11:O11)/E5-E7)
     #
-    chi_r =( (n * (k-1)) / (sum_squared_ranks_dems - cf) * (sum_ranks_sq/n - cf) )
-    # chi_r =( (n * (k-1)) * (sum_ranks_sq/n - cf) )/ (sum_ranks - cf)
-    # =+E5*(E6-1)/(SUM($Sheet1.Q14:V322)-E7)*(SUM($Sheet1.J11:O11)/E5-E7)
-    #
-    print(f'n = {n} (number of criteria)')
+    print(f'N = {n} (number of criteria)')
     print(f'k = {k} (number of DEMs)')
-    print(f'cf = {cf}')
-    print(f'sum of ranks = {sum_ranks}')
-    print(f'sum of (ranks squared) = {sum_ranks_sq}')
-    print(f'sum of (squared ranks) = {sum_squared_ranks_dems}')
+    print(f'CF = {cf}')
+    print(f'sum of ranks (vector) = {sum_ranks_dems.tolist()}')  # excel Sheet1!J10:O10
+    print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
+    print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
+    print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
     print(f'chi_r = {chi_r:4.3f}')
     #
     #get values from tables
@@ -221,3 +257,4 @@ def bonferroni_dunn_test(df,dems_list,alpha=0.95):
     df2['DEM'] = dems_list
     # return df2
     return df2
+
