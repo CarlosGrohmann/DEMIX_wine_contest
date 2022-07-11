@@ -55,7 +55,7 @@ def make_criteria_df(csv_list):
 def make_rank_df(df,dem_list):
     '''calculate ranks for criteria (error metrics) in dataframes'''
     # rank values in df
-    df_ranks = pd.concat([df, df.rank(method='min',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')], axis=1)
+    df_ranks = pd.concat([df, df[dem_list].rank(method='min',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')], axis=1)
     # create cols for squared ranks
     for col in dem_list:
         df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
@@ -91,10 +91,10 @@ def friedman_stats(df,dem_list,tables_dir,cl):
     print(f'N = {n} (number of criteria)')
     print(f'k = {k} (number of DEMs)')
     print(f'CF = {cf}')
-    print(f'sum of ranks (vector) = {ranks_vect.tolist()}')  # excel Sheet1!J10:O10
-    print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
-    print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
-    print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
+    #print(f'sum of ranks (vector) = {ranks_vect.tolist()}')  # excel Sheet1!J10:O10
+    #print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
+    #print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
+    #print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
     print(f'chi_r = {chi_r:4.3f}')
     #
     #get values from tables
