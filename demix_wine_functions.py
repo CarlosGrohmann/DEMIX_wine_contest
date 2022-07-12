@@ -55,7 +55,7 @@ def make_criteria_df(csv_list):
 def make_rank_df(df,dem_list):
     '''calculate ranks for criteria (error metrics) in dataframes'''
     # rank values in df
-    df_ranks = pd.concat([df, df[dem_list].rank(method='min',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')], axis=1)
+    df_ranks = pd.concat([df, df[dem_list].rank(method='average',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')], axis=1)
     # create cols for squared ranks
     for col in dem_list:
         df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
