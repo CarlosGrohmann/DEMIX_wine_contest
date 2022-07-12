@@ -190,3 +190,57 @@ def bonferroni_dunn_test(df,dems_list,alpha=0.95):
     # return df2
     return df2
 
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# these 3 funcs are used to get a new dataframe with the ranks
+# based on some conditions, like equality to DSM/DTM, the
+# criteria, etc
+
+# func to get ranks based on equality of criteria in df cols
+def get_ranks_for_equal_criteria(df,crit_dict,dem_list):
+    '''this func receives a dict of target_columns:value and
+    returns the ranks for a subset of the dataframe where
+    target_colum==value'''
+    df_temp = pd.DataFrame(columns=dem_list)
+    for key,val in crit_dict.items():
+        df_select = df[df[val]==key]
+        df_select_ranks = make_rank_df(df_select,dem_list)
+        dem_cols_rank = [i+'_rank' for i in dem_list]
+        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        df_temp.loc[key] = list(dems_ranked)
+    return df_temp
+
+# func to get ranks based on GREATER THAN of criteria in df cols
+def get_ranks_for_gt_criteria(df,crit_dict,dem_list):
+    '''this func receives a dict of target_columns:value and
+    returns the ranks for a subset of the dataframe where
+    target_colum>=value'''
+    df_temp = pd.DataFrame(columns=dem_list)
+    for key,val in crit_dict.items():
+        key_number = int(key.split(' > ')[1].split(' ')[0])
+        df_select = df[df[val]>=key_number]
+        df_select_ranks = make_rank_df(df_select,dem_list)
+        dem_cols_rank = [i+'_rank' for i in dem_list]
+        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        df_temp.loc[key] = list(dems_ranked)
+    return df_temp
+
+# func to get ranks based on LESS THAN of criteria in df cols
+def get_ranks_for_lt_criteria(df,crit_dict,dem_list):
+    '''this func receives a dict of target_columns:value and
+    returns the ranks for a subset of the dataframe where
+    target_colum<=value'''
+    df_temp = pd.DataFrame(columns=dem_list)
+    for key,val in crit_dict.items():
+        key_number = int(key.split(' < ')[1].split(' ')[0])
+        df_select = df[df[val]<=key_number]
+        df_select_ranks = make_rank_df(df_select,dem_list)
+        dem_cols_rank = [i+'_rank' for i in dem_list]
+        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        df_temp.loc[key] = list(dems_ranked)
+    return df_temp
+
