@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------
 # Functions for the DEMIX Wine Contest Jupyter notebook
 # Carlos H. Grohmann
-# version 2022-07-04
+# version 2022-07-13
 
 import sys,os
 import pandas as pd
@@ -51,11 +51,38 @@ def make_criteria_df(csv_list):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
+def rank_with_tolerance(sr, tolerance, method):
+    ''' thanks to https://stackoverflow.com/a/72957060/4984000'''
+    vals = pd.Series(sr.unique()).sort_values()
+    vals.index = vals
+    vals = vals.mask(vals - vals.shift(1) < tolerance, vals.shift(1))
+    return sr.map(vals).fillna(sr).rank(method=method)
+
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
 # calculate ranks for criteria (error metrics) in dataframes
-def make_rank_df(df,dem_list):
-    '''calculate ranks for criteria (error metrics) in dataframes'''
+def make_rank_df(df,dem_list,tolerance):
+    '''calculate ranks for metrics in dataframes'''
+    # subset of df with only DEMs values
+    df_for_ranking = df[dem_list]
+    dem_cols_rank = [i+'_rank' for i in dem_list]
     # rank values in df
-    df_ranks = pd.concat([df, df[dem_list].rank(method='average',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')], axis=1)
+    if tolerance is not None:
+        tolerance = tolerance + 1e-10
+        print(f'Ranking using tolerance of: {tolerance} (please wait...)',end='\n\n')
+        print()
+        df_temp = df_for_ranking.apply(lambda row: rank_with_tolerance(row, tolerance=tolerance, method='average'), axis=1)
+        df_temp.columns = dem_cols_rank
+        df_ranks = pd.concat([df, df_temp], axis=1)
+    else:
+        print('Ranking without tolerance',end='\n\n')
+        df_temp = df_for_ranking.rank(method='average',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
+        df_ranks = pd.concat([df, df_temp], axis=1)
     # create cols for squared ranks
     for col in dem_list:
         df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
@@ -88,13 +115,13 @@ def friedman_stats(df,dem_list,tables_dir,cl):
     chi_r =( (n * (k-1)) / (sum_squared_ranks - cf) * (sum_ranks_sq_vect/n - cf) )
     # =+E5*(E6-1)/(SOMA(Sheet1!Q14:V322)-E7)*(SOMA(Sheet1!J11:O11)/E5-E7)
     #
-    print(f'N = {n} (number of criteria)')
+    print(f'N = {n} (number of "opinions")')
     print(f'k = {k} (number of DEMs)')
     print(f'CF = {cf}')
-    #print(f'sum of ranks (vector) = {ranks_vect.tolist()}')  # excel Sheet1!J10:O10
-    #print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
-    #print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
-    #print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
+#     print(f'sum of ranks (vector) = {ranks_vect.tolist()}')  # excel Sheet1!J10:O10
+#     print(f'sum of (ranks squared) = {ranks_sq_vect.tolist()}')  # excel Sheet1!J11:O11
+#     print(f'sum of squared ranks = {sum_squared_ranks}')         # excel Sheet2!N4
+#     print(f'sum of ranks squared (total) = {sum_ranks_sq_vect}') # excel Sheet2!N5
     print(f'chi_r = {chi_r:4.3f}')
     #
     #get values from tables
@@ -119,8 +146,10 @@ def friedman_stats(df,dem_list,tables_dir,cl):
     #print(f'chi_crit: {chi_crit}')
     #
     if chi_r > chi_crit:
+        print(f'And since chi_r ({chi_r}) is greater than chi_crit ({chi_crit})...')
         print(f'Yay!! We can reject the null hipothesis and go to the Post-Hoc analysis!!')
     else:
+        print(f'But since chi_r ({chi_r}) is less than chi_crit ({chi_crit})...')
         print('Oh, no! We cannot disprove the null hipothesis at the given CL...')
 
 
@@ -208,9 +237,8 @@ def get_ranks_for_equal_criteria(df,crit_dict,dem_list):
     df_temp = pd.DataFrame(columns=dem_list)
     for key,val in crit_dict.items():
         df_select = df[df[val]==key]
-        df_select_ranks = make_rank_df(df_select,dem_list)
         dem_cols_rank = [i+'_rank' for i in dem_list]
-        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        dems_ranked = list(df_select[dem_cols_rank].sum())
         df_temp.loc[key] = list(dems_ranked)
     return df_temp
 
@@ -223,9 +251,8 @@ def get_ranks_for_gt_criteria(df,crit_dict,dem_list):
     for key,val in crit_dict.items():
         key_number = int(key.split(' > ')[1].split(' ')[0])
         df_select = df[df[val]>=key_number]
-        df_select_ranks = make_rank_df(df_select,dem_list)
         dem_cols_rank = [i+'_rank' for i in dem_list]
-        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        dems_ranked = list(df_select[dem_cols_rank].sum())
         df_temp.loc[key] = list(dems_ranked)
     return df_temp
 
@@ -238,9 +265,13 @@ def get_ranks_for_lt_criteria(df,crit_dict,dem_list):
     for key,val in crit_dict.items():
         key_number = int(key.split(' < ')[1].split(' ')[0])
         df_select = df[df[val]<=key_number]
-        df_select_ranks = make_rank_df(df_select,dem_list)
         dem_cols_rank = [i+'_rank' for i in dem_list]
-        dems_ranked = list(df_select_ranks[dem_cols_rank].sum())
+        dems_ranked = list(df_select[dem_cols_rank].sum())
         df_temp.loc[key] = list(dems_ranked)
     return df_temp
 
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
