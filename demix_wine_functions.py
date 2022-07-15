@@ -65,8 +65,26 @@ def rank_with_tolerance(sr, tolerance, method):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
+def sort_with_tolerance_np(sr, tolerance):
+    '''sort values in a row using numpy and a given tolerance '''
+    arr = sr.to_numpy().astype(float)
+    arr_sort = np.sort(arr)
+    arr_argsort = arr.argsort().argsort()
+    arr_shift = np.pad(arr_sort, (1,), 'constant', constant_values=np.nan)[:-2]
+    arr_diff = arr_sort - arr_shift
+    arr_tol = np.where(arr_diff < tolerance, arr_shift, arr_sort)
+    sr_tol = pd.Series(arr_tol[arr_argsort])
+    return sr_tol
+
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
 # calculate ranks for criteria (error metrics) in dataframes
-def make_rank_df(df,dem_list,tolerance):
+def make_rank_df(df,dem_list,tolerance,method):
     '''calculate ranks for metrics in dataframes'''
     # subset of df with only DEMs values
     df_for_ranking = df[dem_list]
@@ -74,14 +92,14 @@ def make_rank_df(df,dem_list,tolerance):
     # rank values in df
     if tolerance is not None:
         tolerance = tolerance + 1e-10
-        print(f'Ranking using tolerance of: {tolerance} (please wait...)',end='\n\n')
+        print(f'Ranking using tolerance of: {tolerance:2.3}',end='\n\n')
         print()
-        df_temp = df_for_ranking.apply(lambda row: rank_with_tolerance(row, tolerance=tolerance, method='average'), axis=1)
-        df_temp.columns = dem_cols_rank
+        df_temp = df_for_ranking.apply(lambda row: sort_with_tolerance_np(row, tolerance=tolerance))
+        df_temp = df_temp.rank(method=method, ascending=True, axis=1, numeric_only=True).add_suffix('_rank')
         df_ranks = pd.concat([df, df_temp], axis=1)
     else:
         print('Ranking without tolerance',end='\n\n')
-        df_temp = df_for_ranking.rank(method='average',ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
+        df_temp = df_for_ranking.rank(method=method,ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
         df_ranks = pd.concat([df, df_temp], axis=1)
     # create cols for squared ranks
     for col in dem_list:
