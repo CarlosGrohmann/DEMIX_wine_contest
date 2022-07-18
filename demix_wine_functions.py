@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------
 # Functions for the DEMIX Wine Contest Jupyter notebook
 # Carlos H. Grohmann
-# version 2022-07-13
+# version 2022-07-18
 
 import sys,os
 import pandas as pd
@@ -96,11 +96,13 @@ def make_rank_df(df,dem_list,tolerance,method):
         print()
         df_temp = df_for_ranking.apply(lambda row: sort_with_tolerance_np(row, tolerance=tolerance))
         df_temp = df_temp.rank(method=method, ascending=True, axis=1, numeric_only=True).add_suffix('_rank')
-        df_ranks = pd.concat([df, df_temp], axis=1)
+        df_ranks = pd.concat([df.reset_index(), df_temp.reset_index()], axis=1)
+        df_ranks = df_ranks.drop(['index'], axis=1)
     else:
         print('Ranking without tolerance',end='\n\n')
         df_temp = df_for_ranking.rank(method=method,ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
-        df_ranks = pd.concat([df, df_temp], axis=1)
+        df_ranks = pd.concat([df.reset_index(), df_temp.reset_index()], axis=1)
+        df_ranks = df_ranks.drop(['index'], axis=1)
     # create cols for squared ranks
     for col in dem_list:
         df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
