@@ -295,3 +295,20 @@ def get_ranks_for_lt_criteria(df,crit_dict,dem_list):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
+# func to get ranks based defined condition
+def get_ranks_condition(df,cond_list,label_list,dem_list):
+    '''returns a df based on a condition, passed as string'''
+    df_temp = pd.DataFrame(columns=dem_list)
+    for cond,label in zip(cond_list,label_list):
+        df_select = df.query(cond)
+        dem_cols_rank = [i+'_rank' for i in dem_list]
+        dems_ranked = list(df_select[dem_cols_rank].sum().div(len(df_select)))
+        df_temp.loc[f'{label}'] = list(dems_ranked)
+    return df_temp
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
