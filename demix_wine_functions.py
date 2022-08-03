@@ -84,8 +84,8 @@ def sort_with_tolerance_np(sr, tolerance):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # calculate ranks for criteria (error metrics) in dataframes
-def make_rank_df(df,dem_list,tolerance,method):
-    '''calculate ranks for metrics in dataframes'''
+def make_rank_df_oneTolerance(df,dem_list,tolerance,method):
+    '''calculate ranks for metrics in dataframes - uses a single tolerance value'''
     # subset of df with only DEMs values
     df_for_ranking = df[dem_list]
     dem_cols_rank = [i+'_rank' for i in dem_list]
@@ -103,6 +103,47 @@ def make_rank_df(df,dem_list,tolerance,method):
         df_temp = df_for_ranking.rank(method=method,ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
         df_ranks = pd.concat([df.reset_index(), df_temp.reset_index()], axis=1)
         df_ranks = df_ranks.drop(['index'], axis=1)
+    # create cols for squared ranks
+    for col in dem_list:
+        df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
+    return df_ranks
+
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# calculate ranks for criteria (error metrics) in dataframes
+def make_rank_df(df,dem_list,tolerance_dict,method):
+    '''calculate ranks for metrics in dataframes - accepts a 
+    dictionary of criterion/tolerance values '''
+    dem_cols_rank = [i+'_rank' for i in dem_list]
+    df_ranks = pd.DataFrame(columns=list(df.columns) + dem_cols_rank)
+    if tolerance_dict is not None:
+        print(f'Ranking with user-defined tolerances',end='\n\n')
+        # iterate through dict of criterion/tolerance
+        for key, value in tolerance_dict.items():
+            criterion = key
+            tolerance = value + 1e-10
+            # subset of df - only rows of selected criterion 
+            df_crit = df.loc[df['CRITERION'] == criterion]
+            # subset of df_crit - only DEMs values
+            df_for_ranking = df_crit[dem_list]
+            # rank values in df
+            df_temp = df_for_ranking.apply(lambda row: sort_with_tolerance_np(row, tolerance=tolerance))
+            df_temp = df_temp.rank(method=method, ascending=True, axis=1, numeric_only=True).add_suffix('_rank')
+            df_crit_rnk = pd.concat([df_crit.reset_index(), df_temp.reset_index()], axis=1)
+            df_crit_rnk = df_crit_rnk.drop(['index'], axis=1)
+            df_ranks = pd.concat([df_ranks, df_crit_rnk])
+    else:
+        print('Ranking without tolerance',end='\n\n')
+        df_for_ranking = df[dem_list]
+        df_temp = df_for_ranking.rank(method=method,ascending=True,axis=1,numeric_only=True).add_suffix('_rank')
+        df_ranks = pd.concat([df.reset_index(), df_temp.reset_index()], axis=1)
+        df_ranks = df_ranks.drop(['index'], axis=1)
+    # df_ranks = df_ranks.drop(['index'], axis=1)  
     # create cols for squared ranks
     for col in dem_list:
         df_ranks[col+'_rank_sq'] = df_ranks[col+'_rank']**2
