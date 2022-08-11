@@ -202,15 +202,15 @@ def friedman_stats(df,dem_list,tables_dir,cl):
         idx = df_critical.index[-1]
         col = f'{CL:05.3f}'
         chi_crit = df_critical.at[idx, col]
-    print(f'For k={k}, CL={CL}, and N={n}, the critical value to compare is chi_crit={chi_crit}')
+    print(f'For k={k}, CL={CL}, and N={n}, the critical value to compare is chi_crit={chi_crit:4.3f}')
     # print(f'chi_r: {chi_r:04.3f}')
     #print(f'chi_crit: {chi_crit}')
     #
     if chi_r > chi_crit:
-        print(f'And since chi_r ({chi_r}) is greater than chi_crit ({chi_crit})...')
+        print(f'And since chi_r ({chi_r:4.3f}) is greater than chi_crit ({chi_crit:4.3f})...')
         print(f'Yay!! We can reject the null hipothesis and go to the Post-Hoc analysis!!')
     else:
-        print(f'But since chi_r ({chi_r}) is less than chi_crit ({chi_crit})...')
+        print(f'But since chi_r ({chi_r:4.3f}) is less than chi_crit ({chi_crit:4.3f})...')
         print('Oh, no! We cannot disprove the null hipothesis at the given CL...')
 
 
@@ -219,7 +219,6 @@ def friedman_stats(df,dem_list,tables_dir,cl):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
-# DEMs ranked
 def print_dems_ranked(df,dem_list):
     '''print ranked DEMs'''
     dem_cols_rank = [i+'_rank' for i in dem_list]
@@ -227,9 +226,8 @@ def print_dems_ranked(df,dem_list):
     pd_ranked = pd.DataFrame()
     dems_ranked = df_ranks[dem_cols_rank].sum()
     pd_ranked['rank_sum'] = dems_ranked
-    pd_ranked['rank'] = pd_ranked['rank_sum'].rank(ascending=1)
-    # pd_ranked = pd_ranked.set_index('final_rank').sort_index()
-    print(pd_ranked.sort_values(by='rank'))
+    # pd_ranked['rank'] = pd_ranked['rank_sum'].rank(ascending=1)
+    print(pd_ranked.sort_values(by='rank_sum'))
 
 
 
