@@ -227,6 +227,7 @@ def print_dems_ranked(df,dem_list):
     dems_ranked = df_ranks[dem_cols_rank].sum()
     pd_ranked['rank_sum'] = dems_ranked
     # pd_ranked['rank'] = pd_ranked['rank_sum'].rank(ascending=1)
+    pd_ranked.index = dem_list
     print(pd_ranked.sort_values(by='rank_sum'))
 
 
