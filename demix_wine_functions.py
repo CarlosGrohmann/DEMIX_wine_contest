@@ -285,6 +285,26 @@ def bonferroni_dunn_test(df,dems_list,alpha=0.95):
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
+def show_filters(grid):
+    '''func to show which filters are defined for each column'''
+    state_dict_cols = grid.get_state()['_columns']
+    for key,val in state_dict_cols.items():
+        for c_key,c_val in val.items():
+            if c_key == 'filter_info':
+                cols_vals_lst = val['values']
+                filter_sel_idx = val[c_key]['selected']
+                filter_selection = [cols_vals_lst[i] for i in filter_sel_idx]
+                print(f'Filter settings for column {key}:{filter_selection}')
+    print()
+
+
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
 # these 3 funcs are used to get a new dataframe with the ranks
 # based on some conditions, like equality to DSM/DTM, the
 # criteria, etc
