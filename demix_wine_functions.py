@@ -223,10 +223,12 @@ def print_dems_ranked(df,dem_list):
     '''print ranked DEMs'''
     dem_cols_rank = [i+'_rank' for i in dem_list]
     df_ranks = df
+    n_opinions = len(df_ranks)
     pd_ranked = pd.DataFrame()
     dems_ranked = df_ranks[dem_cols_rank].sum()
     pd_ranked['rank_sum'] = dems_ranked
     # pd_ranked['rank'] = pd_ranked['rank_sum'].rank(ascending=1)
+    pd_ranked['rnk_div_opn'] = pd_ranked['rank_sum'].div(n_opinions).round(3)
     pd_ranked.index = dem_list
     print(pd_ranked.sort_values(by='rank_sum'))
 
@@ -288,13 +290,18 @@ def bonferroni_dunn_test(df,dems_list,alpha=0.95):
 def show_filters(grid):
     '''func to show which filters are defined for each column'''
     state_dict_cols = grid.get_state()['_columns']
+    nothing_select = True
     for key,val in state_dict_cols.items():
         for c_key,c_val in val.items():
             if c_key == 'filter_info':
-                cols_vals_lst = val['values']
-                filter_sel_idx = val[c_key]['selected']
-                filter_selection = [cols_vals_lst[i] for i in filter_sel_idx]
-                print(f'Filter settings for column {key}:{filter_selection}')
+                if val[c_key]['selected'] is not None:
+                    nothing_select = False
+                    cols_vals_lst = val['values']
+                    filter_sel_idx = val[c_key]['selected']
+                    filter_selection = [cols_vals_lst[i] for i in filter_sel_idx]
+                    print(f'Filter settings for column {key}:{filter_selection}')
+    if nothing_select == True:
+        print('No filters applied')
     print()
 
 
