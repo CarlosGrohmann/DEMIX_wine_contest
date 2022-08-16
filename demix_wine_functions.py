@@ -283,6 +283,78 @@ def bonferroni_dunn_test(df,dems_list,alpha=0.95):
 
 
 
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+def tables_dems_ranked_bonferroni_dunn(df,dem_list,alpha=0.95):
+    '''print ranked DEMs and apply Bonferroni-Dunn test'''
+    
+    dem_cols_rank = [i+'_rank' for i in dem_list]
+    dems_ranked = df[dem_cols_rank].sum()
+    k = len(dem_list)
+    n = len(df) # number of opinions 
+    # alpha = 0.95 # default value
+    quant = 1-alpha/k/(k-1)
+    zi = ndtri(quant)
+    crit = zi*np.sqrt(n*k*(k+1)/6)
+    tie_dict = {}
+    
+    # Y/N table - Bonferroni-Dunn test
+    cols = ['DEM'] + dem_list
+    df_table = pd.DataFrame(columns=cols) # df and cols names
+    df_table['DEM'] = dem_list # first column of df
+    # get ranks values 
+    ranks_vals = dems_ranked.to_frame().T
+    # populate table
+    for d1 in dem_list:
+        tie_dict[d1] = []
+        r = dem_list.index(d1)
+        for d2 in dem_list:
+            rank_dem1 = ranks_vals[f'{d1}_rank'].values[0]
+            rank_dem2 = ranks_vals[f'{d2}_rank'].values[0]
+            # print(d1,d2,rank_dem1,rank_dem2)
+            if np.abs(rank_dem1 - rank_dem2) > crit:
+                df_table.at[r,d2] = 'Y'
+            else:
+                df_table.at[r,d2] = 'N'
+                tie_dict[d1].append(d2)
+                
+    # use numpy to get only the upper triangle of the table 
+    m = np.triu(df_table.values, k=2)
+    df_yn = pd.DataFrame(m, columns=cols)
+    df_yn['DEM'] = dem_list
+
+    # table of ranked DEMs
+    n_opinions = len(df)
+    pd_ranked = pd.DataFrame()
+    dems_rnk_sum = df_ranks[dem_cols_rank].sum()
+    pd_ranked['sum_ranks'] = dems_rnk_sum
+    pd_ranked['sum_ranks_div_opin'] = pd_ranked['sum_ranks'].div(n_opinions).round(3)
+    pd_ranked.index = dem_list
+    
+    # check for ties in final ranking
+    for k,v in tie_dict.items():
+        v.remove(k)
+        if v:
+            tie_dict[k] = ','.join(v)
+        else:
+            tie_dict[k] = ''
+    pd_ranked['not_stat_diff'] = pd.Series(tie_dict)
+
+    cols_long = ['Sum of ranks',
+                 'Sum of ranks divided \n by number of opinions',
+                 'Not statistically \n different from']
+
+    df_display = pd_ranked.sort_values(by='sum_ranks')
+    df_display.columns = cols_long
+    
+    return df_display,df_yn,tie_dict
+
+
+
+
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
 # -----------------------------------------------------------------
