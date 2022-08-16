@@ -329,7 +329,7 @@ def tables_dems_ranked_bonferroni_dunn(df,dem_list,alpha=0.95):
     # table of ranked DEMs
     n_opinions = len(df)
     pd_ranked = pd.DataFrame()
-    dems_rnk_sum = df_ranks[dem_cols_rank].sum()
+    dems_rnk_sum = df[dem_cols_rank].sum()
     pd_ranked['sum_ranks'] = dems_rnk_sum
     pd_ranked['sum_ranks_div_opin'] = pd_ranked['sum_ranks'].div(n_opinions).round(3)
     pd_ranked.index = dem_list
