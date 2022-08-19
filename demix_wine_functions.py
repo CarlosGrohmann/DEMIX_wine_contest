@@ -231,7 +231,36 @@ def print_dems_ranked(df,dem_list):
     pd_ranked['rnk_div_opn'] = pd_ranked['rank_sum'].div(n_opinions).round(3)
     pd_ranked.index = dem_list
     print(pd_ranked.sort_values(by='rank_sum'))
+<<<<<<< Updated upstream
+=======
 
+
+>>>>>>> Stashed changes
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+def show_filters(grid):
+    '''func to show which filters are defined for each column'''
+    state_dict_cols = grid.get_state()['_columns']
+    nothing_select = True
+    filters_dict = {}
+    for key,val in state_dict_cols.items():
+        for c_key,c_val in val.items():
+            if c_key == 'filter_info':
+                if val[c_key]['selected'] is not None:
+                    nothing_select = False
+                    cols_vals_lst = val['values']
+                    filter_sel_idx = val[c_key]['selected']
+                    filter_selection = [cols_vals_lst[i] for i in filter_sel_idx]
+                    print(f'Filter settings for column {key}:{filter_selection}')
+                    filters_dict[key] = filter_selection
+    if nothing_select == True:
+        print('No filters applied')
+    print()
+    return filters_dict
 
 
 
@@ -376,6 +405,77 @@ def show_filters(grid):
         print('No filters applied')
     print()
 
+
+
+
+
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+# -----------------------------------------------------------------
+def tables_dems_ranked_bonferroni_dunn(df,dem_list,alpha=0.95):
+    '''print ranked DEMs and apply Bonferroni-Dunn test'''
+    
+    dem_cols_rank = [i+'_rank' for i in dem_list]
+    dems_ranked = df[dem_cols_rank].sum()
+    k = len(dem_list)
+    n = len(df) # number of opinions 
+    # alpha = 0.95 # default value
+    quant = 1-alpha/k/(k-1)
+    zi = ndtri(quant)
+    crit = zi*np.sqrt(n*k*(k+1)/6)
+    tie_dict = {}
+    
+    # Y/N table - Bonferroni-Dunn test
+    cols = ['DEM'] + dem_list
+    df_table = pd.DataFrame(columns=cols) # df and cols names
+    df_table['DEM'] = dem_list # first column of df
+    # get ranks values 
+    ranks_vals = dems_ranked.to_frame().T
+    # populate table
+    for d1 in dem_list:
+        tie_dict[d1] = []
+        r = dem_list.index(d1)
+        for d2 in dem_list:
+            rank_dem1 = ranks_vals[f'{d1}_rank'].values[0]
+            rank_dem2 = ranks_vals[f'{d2}_rank'].values[0]
+            # print(d1,d2,rank_dem1,rank_dem2)
+            if np.abs(rank_dem1 - rank_dem2) > crit:
+                df_table.at[r,d2] = 'Y'
+            else:
+                df_table.at[r,d2] = 'N'
+                tie_dict[d1].append(d2)
+                
+    # use numpy to get only the upper triangle of the table 
+    m = np.triu(df_table.values, k=2)
+    df_yn = pd.DataFrame(m, columns=cols)
+    df_yn['DEM'] = dem_list
+
+    # table of ranked DEMs
+    n_opinions = len(df)
+    pd_ranked = pd.DataFrame()
+    dems_rnk_sum = df[dem_cols_rank].sum()
+    pd_ranked['sum_ranks'] = dems_rnk_sum
+    pd_ranked['sum_ranks_div_opin'] = pd_ranked['sum_ranks'].div(n_opinions).round(3)
+    pd_ranked.index = dem_list
+    
+    # check for ties in final ranking
+    for k,v in tie_dict.items():
+        v.remove(k)
+        if v:
+            tie_dict[k] = ','.join(v)
+        else:
+            tie_dict[k] = ''
+    pd_ranked['not_stat_diff'] = pd.Series(tie_dict)
+
+    cols_long = ['Sum of ranks',
+                 'Sum of ranks divided \n by number of opinions',
+                 'Not statistically \n different from']
+
+    df_display = pd_ranked.sort_values(by='sum_ranks')
+    df_display.columns = cols_long
+    
+    return df_display,df_yn,tie_dict
 
 
 
