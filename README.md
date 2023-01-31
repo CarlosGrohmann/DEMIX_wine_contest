@@ -13,7 +13,7 @@ csv_files/difference_distributions_csv - csv files for histograms (originally ma
 
 The DEMIX database was downloaded from Zenodo (Guth 2022): https://zenodo.org/record/7402618#.Y7mq46fMLPQ  
 
-The notebook is also available via Google Colab: https://colab.research.google.com/drive/1uPa6-CFHHfYedlffWz--IJL4Uc6CDX9H?usp=sharing  
+The notebook is also available via Google Colab: https://colab.research.google.com/drive/14TqW3iAGn7MJ3-Oq3OWQv0mGTeJrdruI?usp=sharing&sandboxMode=true 
 
 
 
