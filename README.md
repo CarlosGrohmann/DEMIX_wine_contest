@@ -6,9 +6,10 @@ Repository to house the Jupyter notebook and associated files of the wine contes
 DEMIX_wineContest_notebook.ipynb - the notebook itself  
 demix_wine_functions.py - custom functions for analysis and plotting  
 Friedmans_tables.zip - tables for Friedman statistics  
-demix_database_v1.csv - the DEMIX database  
-demix_dbase_hillshade_criterion.csv - example of database with subjective criteria  
-demix_dbase_toy_example.csv - simple example of the wine contest  
+csv_files/demix_database_v1.csv - the DEMIX database  
+csv_files/demix_dbase_hillshade_criterion.csv - example of database with subjective criteria  
+csv_files/demix_dbase_toy_example.csv - simple example of the wine contest  
+csv_files/difference_distributions_csv - csv files for histograms (originally made with Microdem)
 
 The DEMIX database was downloaded from Zenodo (Guth 2022): https://zenodo.org/record/7402618#.Y7mq46fMLPQ  
 
