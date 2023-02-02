@@ -1,5 +1,5 @@
 # DEMIX wine contest
-Repository to house the Jupyter notebook and associated files of the wine contest for Global DEMs, as part of the DEMIX Project (https://ceos.org/ourwork/workinggroups/wgcv/current-activites/)  
+Repository to house the DEMIX Wine Contest Jupyter notebook and associated files of the wine contest for Global DEMs, as part of the DEMIX Project (https://ceos.org/ourwork/workinggroups/wgcv/current-activites/)  
 
 
 **Content of this repo**  
