@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------
 # Functions for the DEMIX Wine Contest Jupyter notebook
 # Carlos H. Grohmann
-# version 2022-09-29
+# version 2023-06-21
 
 import sys,os
 import pandas as pd
@@ -21,6 +21,7 @@ import seaborn as sns
 import matplotlib.colors
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
+from IPython.display import display, HTML
 
 
 
@@ -114,15 +115,16 @@ def make_rank_df(df,dem_list,tolerance_dict,method):
             tolerance = value # + 0.000001
             # subset of df - only rows of selected criterion 
             df_crit = df.loc[df['CRITERION'] == criterion]
-            # subset of df_crit - only DEMs values
-            df_for_ranking = df_crit[dem_list]
-            # rank values in df
-            df_temp = df_for_ranking.apply(lambda row: fix_vals_ranks_ties(row, tolerance=tolerance), axis=1)
-            df_temp.columns = dem_list
-            df_temp = df_temp.rank(method=method, ascending=True, axis=1, numeric_only=True).add_suffix('_rank')
-            df_crit_rnk = pd.concat([df_crit.reset_index(), df_temp.reset_index()], axis=1)
-            df_crit_rnk = df_crit_rnk.drop(['index'], axis=1)
-            df_ranks = pd.concat([df_ranks, df_crit_rnk])
+            if len(df_crit) > 0:
+                # subset of df_crit - only DEMs values
+                df_for_ranking = df_crit[dem_list]
+                # rank values in df
+                df_temp = df_for_ranking.apply(lambda row: fix_vals_ranks_ties(row, tolerance=tolerance), axis=1)
+                df_temp.columns = dem_list
+                df_temp = df_temp.rank(method=method, ascending=True, axis=1, numeric_only=True).add_suffix('_rank')
+                df_crit_rnk = pd.concat([df_crit.reset_index(), df_temp.reset_index()], axis=1)
+                df_crit_rnk = df_crit_rnk.drop(['index'], axis=1)
+                df_ranks = pd.concat([df_ranks, df_crit_rnk])
     else:
         print('Ranking without tolerance',end='\n\n')
         df_for_ranking = df[dem_list]
@@ -148,13 +150,13 @@ def print_dems_ranked(df,dem_list):
     dem_cols_rank = [i+'_rank' for i in dem_list]
     df_ranks = df
     n_opinions = len(df_ranks)
-    pd_ranked = pd.DataFrame()
+    df_ranked = pd.DataFrame()
     dems_ranked = df_ranks[dem_cols_rank].sum()
-    pd_ranked['rank_sum'] = dems_ranked
-    # pd_ranked['rank'] = pd_ranked['rank_sum'].rank(ascending=1)
-    pd_ranked['rnk_div_opn'] = pd_ranked['rank_sum'].div(n_opinions).round(3)
-    pd_ranked.index = dem_list
-    print(pd_ranked.sort_values(by='rank_sum'))
+    df_ranked['rank_sum'] = dems_ranked
+    # df_ranked['rank'] = df_ranked['rank_sum'].rank(ascending=1)
+    df_ranked['rnk_div_opn'] = df_ranked['rank_sum'].div(n_opinions).round(3)
+    df_ranked.index = dem_list
+    print(df_ranked.sort_values(by='rank_sum'))
 
 
 
@@ -236,7 +238,7 @@ def friedman(df,dem_list,tables_dir,cl):
 # ---------------------------------------------------------------------------------------
 def bonferroni(df,dem_list,alpha=0.95):
     '''this func will calculate the bonferroni-dunn test, 
-    and profuce the table of ranks and ties'''
+    and produce the table of ranks and ties'''
     # alpha = 0.95 default value
     # preliminaries
     dem_cols = dem_list
@@ -269,22 +271,22 @@ def bonferroni(df,dem_list,alpha=0.95):
             else:
                 df_table.at[r,d2] = 'N'
                 tie_dict[d1].append(f'{d1}/{d2}')
+                # tie_dict[d1].append(f'{d2}')
     #----------------------------------------------------------
     # table of ranked DEMs (final result of wine contest)
-    pd_ranked = pd.DataFrame()
+    df_ranked = pd.DataFrame()
     dems_rnk_sum = df[dem_cols_rank].sum()
-    pd_ranked['sum_ranks'] = dems_rnk_sum
-    # "normalize" ranks values)
-    # divide by the number of opinions
+    df_ranked['sum_ranks'] = dems_rnk_sum
+    # "normalize" ranks values - divide by the number of opinions
     divider = n
-    pd_ranked['sum_rnks_div_n'] = pd_ranked['sum_ranks'].div(n).round(3)
-    pd_ranked.index = dem_list
-    pd_ranked['rank'] = pd_ranked['sum_ranks'].rank(method='average', ascending=True, axis=0)
+    df_ranked['sum_rnks_div_n'] = df_ranked['sum_ranks'].div(n).round(3)
+    df_ranked.index = dem_list
+    df_ranked['rank'] = df_ranked['sum_ranks'].rank(method='average', ascending=True, axis=0)
     # check for ties in final ranking
-    pd_ranked_ties = rank_ties_bonf(pd_ranked,tie_dict)
-    pd_ranked_ties['ties'] = pd_ranked_ties['not_stat_diff'].where(pd_ranked_ties['not_stat_diff']=='', pd_ranked_ties['rank'])
+    df_ranked_ties = rank_ties_bonf(df_ranked,tie_dict)
+    # df_ranked_ties['ties'] = df_ranked_ties['not_stat_diff'].where(df_ranked_ties['not_stat_diff']=='', df_ranked_ties['rank'])
     # return
-    return pd_ranked_ties 
+    return df_ranked_ties,tie_dict,df_table
     
 
 
@@ -293,17 +295,20 @@ def bonferroni(df,dem_list,alpha=0.95):
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
-def rank_ties_bonf(pd_ranked,tie_dict):
+def rank_ties_bonf(df_ranked,tie_dict):
     '''chek which DEMs are not statistically different'''
     for key,val in tie_dict.items():
-        val.remove(f'{key}/{key}')
+        val.remove(f'{key}/{key}') # remove tie with itself
         if val:
-            tie_dict[key] = ','.join(val)
+            k = key.replace(' ','')
+            val = [s.replace(' ','') for s in val] # remove empty spaces
+            val = [s.replace(f'{k}/','') for s in val] # remove itself from tie
+            tie_dict[key] = ', '.join(val)
         else:
             tie_dict[key] = ''
-    pd_ranked['not_stat_diff'] = pd.Series(tie_dict)
+    df_ranked['not_stat_diff'] = pd.Series(tie_dict)
     # return
-    return pd_ranked
+    return df_ranked
 
 
 
@@ -327,7 +332,7 @@ def wine_contest(df,dem_list,tables_dir,cl,alpha=0.95,verbose=False):
             print(f'Yay!! We can reject the null hipothesis and go to the Post-Hoc analysis!!')
             print()
         # bonferroni 
-        df_ranked = bonferroni(df,dem_list,alpha=0.95)
+        df_ranked,tie_dict,df_table = bonferroni(df,dem_list,alpha=0.95)
     else:
         if verbose:
             print(f'But since chi_r ({chi_r:4.3f}) is less than chi_crit ({chi_crit:4.3f})...')
@@ -335,9 +340,19 @@ def wine_contest(df,dem_list,tables_dir,cl,alpha=0.95,verbose=False):
             print()
         df_ranked = None
     # return
-    return df_ranked,n
+    return df_ranked,n,tie_dict,df_table
 
 
+
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+def wine_contest_results(df):
+    # fix columns order and print results
+    df = df[['rank','sum_ranks','sum_rnks_div_n','not_stat_diff']]
+    df.columns = ['Rank', 'Sum of ranks', 'Sum of ranks divided\\n by number of opinions', 'Ties with']
+    return HTML(df.sort_values('Rank').to_html().replace("\\n","<br>") )
 
 
 # ---------------------------------------------------------------------------------------
@@ -349,7 +364,7 @@ def get_winecontest_ranks_by_condition(df,cond_list,label_list,dem_list,tables_d
     df_temp = pd.DataFrame(columns=dem_list)
     for cond,label in zip(cond_list,label_list):
         df_select = df.query(cond, engine='python').copy()
-        df_ranked,n = wine_contest(df_select,dem_list,tables_dir,cl,alpha=0.95,verbose=False)
+        df_ranked,n,tie_dict,df_table = wine_contest(df_select,dem_list,tables_dir,cl,alpha=0.95,verbose=False)
         if df_ranked is not None:
             dems_ranked = list(df_ranked[rnk_col])
             df_temp.loc[f'{label} (N={n})'] = list(dems_ranked)
@@ -365,22 +380,15 @@ def get_winecontest_ranks_by_condition(df,cond_list,label_list,dem_list,tables_d
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
-def get_winecontest_ranks_by_condition_for_mwc(df,cond_list,label_list,dem_list,tables_dir,crit_list,tiles_list,rnk_col,cl):
-    '''get ranks based on a given condition.
-    slightly different version of get_winecontest_ranks_by_condition
-    due to some needs of the mini-wine-contest, namely the presence
-    of crit_list and tiles_list '''
+def single_condition_mwc(df,cond,dem_list,tables_dir,cl):
+    '''get ranks based on a given single condition '''
     df_temp = pd.DataFrame(columns=dem_list)
-    for cond,label in zip(cond_list,label_list):
-        df_select = df.query(cond, engine='python').copy()
-        df_ranked= wine_contest(df_select,dem_list,tables_dir,cl,alpha=0.95,verbose=False)
-        if df_ranked is not None:
-            dems_ranked = list(df_ranked[rnk_col])
-            df_temp.loc[f'{label} (N={n})'] = list(dems_ranked)
-        else:
-            dems_ranked = [np.nan] * len(dem_list)
-            df_temp.loc[f'{label} (N={n})'] = list(dems_ranked)
-    return df_temp
+    df_select = df.query(cond, engine='python').copy()
+    df_ranked,n,tie_dict,df_table = wine_contest(df_select,
+        dem_list,tables_dir,cl,alpha=0.95,verbose=True)
+    if df_ranked is not None:
+        d = wine_contest_results(df_ranked)
+        display(d)
 
 
 
@@ -393,23 +401,22 @@ def get_wc_ties_rects_by_condition(df,cond_list,dem_list,tables_dir,label_list,c
     all_rects = []
     for cond,label in zip(cond_list,label_list):
         df_select = df.query(cond).copy()
-        df_ranked,n = wine_contest(df_select,dem_list,tables_dir,cl,alpha=0.95,verbose=False)
+        df_ranked,n,tie_dict,df_table = wine_contest(df_select,dem_list,tables_dir,cl,alpha=0.95,verbose=False)
         if df_ranked is not None:
-            nsd_lst = list(df_ranked['not_stat_diff'])
-            for l in range(len(nsd_lst)):
-                if len(nsd_lst[l])>0: # not empty
-                    ties_str = nsd_lst[l]
-                    ties_lst = ties_str.split(',')
-                    for tie in ties_lst:
-                        d0 = tie.split('/')[0]
-                        d1 = tie.split('/')[1]
-                        d0_r = df_ranked.loc[f'{d0}',rnk_col]
-                        d1_r = df_ranked.loc[f'{d1}',rnk_col]
-                        x0 = min(d0_r,d1_r) - 0.25
-                        x1 = max(d0_r,d1_r) + 0.25
-                        wd = x1 - x0
-                        rect = [f'{label} (N={n})',x0,0,wd,1]
-                        all_rects.append(rect)
+            ties_list = [f'{i[0]}/{i[1]}' if i[1]!='' else '' for i in tie_dict.items()]
+            ties_list = [i.replace(', ','/') for i in ties_list]
+            for l in range(len(ties_list)):
+                tie = ties_list[l]
+                if len(tie)>0: # not empty
+                    d0 = tie.split('/')[0]
+                    d1 = tie.split('/')[1]
+                    d0_r = df_ranked.loc[f'{d0}',rnk_col]
+                    d1_r = df_ranked.loc[f'{d1}',rnk_col]
+                    x0 = min(d0_r,d1_r) - 0.25
+                    x1 = max(d0_r,d1_r) + 0.25
+                    wd = x1 - x0
+                    rect = [f'{label} (N={n})',x0,0,wd,1]
+                    all_rects.append(rect)
     return all_rects
 
 
@@ -830,11 +837,11 @@ def tables_dems_ranked_bonferroni_dunn(df,dem_list,alpha=0.95):
 
     # table of ranked DEMs
     n_opinions = len(df)
-    pd_ranked = pd.DataFrame()
+    df_ranked = pd.DataFrame()
     dems_rnk_sum = df[dem_cols_rank].sum()
-    pd_ranked['sum_ranks'] = dems_rnk_sum
-    pd_ranked['sum_ranks_div_opin'] = pd_ranked['sum_ranks'].div(n_opinions).round(3)
-    pd_ranked.index = dem_list
+    df_ranked['sum_ranks'] = dems_rnk_sum
+    df_ranked['sum_ranks_div_opin'] = df_ranked['sum_ranks'].div(n_opinions).round(3)
+    df_ranked.index = dem_list
     
     # check for ties in final ranking
     for k,v in tie_dict.items():
@@ -843,13 +850,13 @@ def tables_dems_ranked_bonferroni_dunn(df,dem_list,alpha=0.95):
             tie_dict[k] = ','.join(v)
         else:
             tie_dict[k] = ''
-    pd_ranked['not_stat_diff'] = pd.Series(tie_dict)
+    df_ranked['not_stat_diff'] = pd.Series(tie_dict)
 
     cols_long = ['Sum of ranks',
                  'Sum of ranks divided \n by number of opinions',
                  'Not statistically \n different from']
 
-    df_display = pd_ranked.sort_values(by='sum_ranks')
+    df_display = df_ranked.sort_values(by='sum_ranks')
     df_display.columns = cols_long
     
     return df_display,df_yn,tie_dict
